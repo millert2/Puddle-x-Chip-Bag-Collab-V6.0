@@ -81,6 +81,14 @@
 #define ltStepPin 52 //left stepper motor step pin 
 #define ltDirPin 53  //left stepper motor direction pin 
 
+//sensor pins
+#define front_IR_pin A0
+#define back_IR_pin A1
+#define left_IR_pin A2
+#define right_IR_pin A3
+#define left_sonar A9
+#define right_sonar A15
+
 AccelStepper stepperRight(AccelStepper::DRIVER, rtStepPin, rtDirPin);//create instance of right stepper motor object (2 driver pins, low to high transition step pin 52, direction input pin 53 (high means forward)
 AccelStepper stepperLeft(AccelStepper::DRIVER, ltStepPin, ltDirPin);//create instance of left stepper motor object (2 driver pins, step pin 50, direction input pin 51)
 MultiStepper steppers;//create instance to control multiple steppers at the same time
@@ -516,6 +524,17 @@ void move5() {
   runAtSpeed();
 }
 
+  void IR_sense(){
+
+    int value = 0;
+    for (int i = 0; i < 4 ; i++) {
+    value = value + analogRead(left_IR_pin);
+    }
+    value=value/5;
+    Serial.println(value);
+
+  }
+
 
 
 
@@ -948,6 +967,7 @@ void setup()
 void loop()
 {
  
+ IR_sense();
 
   //uncomment each function one at a time to see what the code does
   //move1();//call move back and forth function
