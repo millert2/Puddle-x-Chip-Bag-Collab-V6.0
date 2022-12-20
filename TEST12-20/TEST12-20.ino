@@ -56,7 +56,6 @@ volatile float veloRight;
 volatile int errorLeft;
 volatile int errorRight;
 
-#include <Arduino.h>//include for PlatformIO Ide
 #include <AccelStepper.h>//include the stepper motor library
 #include <MultiStepper.h>//include multiple stepper motor library
 #include <NewPing.h> //include sonar library
@@ -319,17 +318,21 @@ void updateState() {
 void robotMotion() {
 
   if ((flag & 0b1) || bitRead(state, collide)) { //check for a collide state
+    digitalWrite(redLED,HIGH);
     stop();
     Serial.println("robot stop");
   }
   else if ((flag & 0b10) || bitRead(state, collide)) { //check for a collide state
+    digitalWrite(redLED,HIGH);
     stop();
     Serial.println("robot stop");
   }
   else{
     Serial.println("robot forward");
-    forward(100);
-    //randomWander();//move randomly as long as all sensors are clear
+    digitalWrite(redLED,LOW);
+    digitalWrite(grnLED,HIGH);
+    //forward(100);
+    randomWander();//move randomly as long as all sensors are clear
   }
 }
 
@@ -352,9 +355,9 @@ void forward(int distance) {
   positions[1] = stepperLeft.currentPosition() + wheelStepsForDistance;   //left motor absolute position
   stepperRight.move(positions[0]);  //move right motor to position
   stepperLeft.move(positions[1]);   //move left motor to position
-  stepperRight.run();
-  stepperLeft.run();
-  //runToStop();
+  //stepperRight.run();
+  //stepperLeft.run();
+  runToStop();
   //run until the robot reaches the target
 }
 
@@ -389,6 +392,9 @@ void setup()
   pinMode(ltStepPin, OUTPUT);//sets pin as output
   pinMode(ltDirPin, OUTPUT);//sets pin as output
   pinMode(stepperEnable, OUTPUT);//sets pin as output
+  pinMode(redLED,OUTPUT);
+  pinMode(ylwLED,OUTPUT);
+  pinMode(grnLED,OUTPUT);
   digitalWrite(stepperEnable, stepperEnFalse);//turns off the stepper motor driver
   pinMode(enableLED, OUTPUT);//set LED as output
   digitalWrite(enableLED, LOW);//turn off enable LED
@@ -446,19 +452,12 @@ void spin(int direction, int angle) {
 
   float angle_rad = ((angle) * PI) / 180; // Converts input angle to radians
 
- 
-  
   float wheelStepsForDistance = (800 / wheelCirc) * (robotDiam * (angle_rad)/2); // (steps per rotation / distance per rotation) * desired distance
-
   // Calculates the distance in encoder ticks for both motors
   float desiredEncoderTicks = (angle / 3.68); // 3.68 is degrees per pulse for the size of our wheels;
  
-
   // Calculates the steps needed from encoders
   float stepsFromEncoder = ((desiredEncoderTicks / 40) * 800);
-
-
-
   stepperRight.setCurrentPosition(0); // Resets stepper motor position to 0
   stepperLeft.setCurrentPosition(0);  // Resets stepper motor position to 0
 
@@ -468,7 +467,8 @@ void spin(int direction, int angle) {
     stepperRight.setMaxSpeed(300);//set right motor speed
     stepperLeft.setMaxSpeed(300);//set left motor speed
     runToStop();//run until the robot reaches the target
-   
+    //stepperRight.run();
+    //stepperLeft.run();
   
   } else {
     stepperRight.moveTo(-stepsFromEncoder); //set motor steps
@@ -476,12 +476,13 @@ void spin(int direction, int angle) {
     stepperRight.setMaxSpeed(300);//set right motor speed
     stepperLeft.setMaxSpeed(300);//set left motor speed
     runToStop();//run until the robot reaches the target
+    //stepperRight.run();
+    //stepperLeft.run();
    
     
   }
   stepperRight.setCurrentPosition(0); // Resets stepper motor position to 0
   stepperLeft.setCurrentPosition(0);  // Resets stepper motor position to 0
-
-    
+  
   
 }
