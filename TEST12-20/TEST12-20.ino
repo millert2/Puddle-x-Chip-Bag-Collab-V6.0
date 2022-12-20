@@ -60,6 +60,7 @@ volatile int errorRight;
 #include <MultiStepper.h>//include multiple stepper motor library
 #include <NewPing.h> //include sonar library
 #include <TimerOne.h>
+#include <ContinuousStepper.h>
 
 //state LEDs connections
 #define redLED 5            //red LED for displaying states
@@ -78,6 +79,10 @@ volatile int errorRight;
 AccelStepper stepperRight(AccelStepper::DRIVER, rtStepPin, rtDirPin);//create instance of right stepper motor object (2 driver pins, low to high transition step pin 52, direction input pin 53 (high means forward)
 AccelStepper stepperLeft(AccelStepper::DRIVER, ltStepPin, ltDirPin);//create instance of left stepper motor object (2 driver pins, step pin 50, direction input pin 51)
 MultiStepper steppers;//create instance to control multiple steppers at the same time
+
+ContinuousStepper  rightMotor;
+ContinuousStepper  leftMotor;
+
 
 //define stepper motor constants
 #define enableLED 13 //stepper enabled LED
@@ -316,24 +321,35 @@ void updateState() {
 */
 
 void robotMotion() {
+  leftMotor.spin(500);
+  rightMotor.spin(500);
+  rightMotor.loop();
+  leftMotor.loop();
 
-  if ((flag & 0b1) || bitRead(state, collide)) { //check for a collide state
+ /* if ((flag & 0b1) || bitRead(state, collide)) { //check for a collide state
     digitalWrite(redLED,HIGH);
-    stop();
+    //stop();
+    rightMotor.stop();
+    leftMotor.stop();
     Serial.println("robot stop");
   }
   else if ((flag & 0b10) || bitRead(state, collide)) { //check for a collide state
     digitalWrite(redLED,HIGH);
-    stop();
+    //stop();
+    rightMotor.stop();
+    leftMotor.stop();    
     Serial.println("robot stop");
   }
   else{
     Serial.println("robot forward");
     digitalWrite(redLED,LOW);
     digitalWrite(grnLED,HIGH);
+  
     //forward(100);
-    randomWander();//move randomly as long as all sensors are clear
-  }
+    //randomWander();//move randomly as long as all sensors are clear
+
+    
+  } */
 }
 
 
@@ -414,13 +430,20 @@ void setup()
   Timer1.initialize(timer_int);         // initialize timer1, and set a period in microseconds
   Timer1.attachInterrupt(updateSensors);  // attaches updateSensors() as a timer overflow interrupt
 
+  rightMotor.begin(rtStepPin, rtDirPin);
+  leftMotor.begin(ltStepPin, ltDirPin);
+
+  
+
   Serial.begin(baud_rate);//start serial communication in order to debug the software while coding
   delay(3000);//wait 3 seconds before robot moves
 }
 
 void loop()
 {
+
   robotMotion();  //execute robot motions based upon sensor data and current state
+ 
 }
 
 void goToGoal(float x, float y){
