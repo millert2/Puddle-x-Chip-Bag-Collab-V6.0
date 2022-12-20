@@ -407,7 +407,6 @@ void setup()
 
 void loop()
 {
-  //goToGoal(100,100);
   robotMotion();  //execute robot motions based upon sensor data and current state
 }
 
