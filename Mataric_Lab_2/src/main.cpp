@@ -83,13 +83,6 @@ MultiStepper steppers;//create instance to control multiple steppers at the same
 #define max_accel 5000//maximum robot acceleration
 #define max_spd 1000//maximum robot speed
 
-#define quarter_rotation 200  //stepper quarter rotation
-#define half_rotation 400     //stepper half rotation
-#define one_rotation  800     //stepper motor runs in 1/4 steps so 800 steps is one full rotation
-#define two_rotation  1600    //stepper motor 2 rotations
-#define three_rotation 2400   //stepper rotation 3 rotations
-#define four_rotation 3200    //stepper rotation 3 rotations
-#define five_rotation 4000    //stepper rotation 3 rotations
 
 //define IR sensor connections
 #define irFront A0 //front IR analog pin
@@ -322,28 +315,39 @@ void robotMotion() {
     stop();
     Serial.println("robot stop");
   }
+  else if ((flag & 0b10) || bitRead(state, collide)) { //check for a collide state
+    stop();
+    Serial.println("robot stop");
+  }
   else{
     Serial.println("robot forward");
-    randomWander();;//move forward as long as all sensors are clear
+    forward(100);
+    //randomWander();//move randomly as long as all sensors are clear
   }
 }
 
 
 void randomWander( void ){
-  float x_ran = random(-100,100);
-  float y_ran = random(-100,100);
+  float x_ran = random(-50,50);
+  float y_ran = random(-50,50);
   goToGoal(x_ran,y_ran);
 }
 
-void forward(int rot) {
+void forward(int distance) {
+  // Calculates the distance in cm to wheel steps  (800  steps per rotation)
+  int wheelStepsForDistance = (800 / wheelCirc) * distance; // (steps per rotation / distance per rotation) * desired distance
+  stepperRight.run();
+  stepperLeft.run();
   long positions[2]; // Array of desired stepper positions
   stepperRight.setCurrentPosition(0);
   stepperLeft.setCurrentPosition(0);
-  positions[0] = stepperRight.currentPosition() + rot;  //right motor absolute position
-  positions[1] = stepperLeft.currentPosition() + rot;   //left motor absolute position
+  positions[0] = stepperRight.currentPosition() + wheelStepsForDistance;  //right motor absolute position
+  positions[1] = stepperLeft.currentPosition() + wheelStepsForDistance;   //left motor absolute position
   stepperRight.move(positions[0]);  //move right motor to position
   stepperLeft.move(positions[1]);   //move left motor to position
-  runToStop();
+  stepperRight.run();
+  stepperLeft.run();
+  //runToStop();
   //run until the robot reaches the target
 }
 
@@ -403,6 +407,7 @@ void setup()
 
 void loop()
 {
+  //goToGoal(100,100);
   robotMotion();  //execute robot motions based upon sensor data and current state
 }
 
@@ -456,8 +461,6 @@ void spin(int direction, int angle) {
     stepperLeft.moveTo(-stepsFromEncoder);  //set motor steps
     stepperRight.setMaxSpeed(300);//set right motor speed
     stepperLeft.setMaxSpeed(300);//set left motor speed
-    stepperRight.runSpeedToPosition();//move right motor
-    stepperLeft.runSpeedToPosition();//move left motor
     runToStop();//run until the robot reaches the target
    
   
@@ -466,8 +469,6 @@ void spin(int direction, int angle) {
     stepperLeft.moveTo(stepsFromEncoder); //set motor steps 
     stepperRight.setMaxSpeed(300);//set right motor speed
     stepperLeft.setMaxSpeed(300);//set left motor speed
-    stepperRight.runSpeedToPosition();//move right motor
-    stepperLeft.runSpeedToPosition();//move left motor
     runToStop();//run until the robot reaches the target
    
     
